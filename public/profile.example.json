@@ -1,0 +1,21 @@
+{
+  "title": "WANTED",
+  "name": "你的名字",
+  "identity": "职位 / 身份",
+  "status": "✦  在职",
+  "quote": [
+    "第一行引言",
+    "第二行引言"
+  ],
+  "skills": [
+    "技能一",
+    "技能二",
+    "技能三"
+  ],
+  "github": "github.com/yourname",
+  "email": "you@example.com",
+  "links": [
+    { "label": "⌥  GitHub", "href": "https://github.com/yourname" },
+    { "label": "⌥  项目名", "href": "https://your-project.com" }
+  ]
+}
