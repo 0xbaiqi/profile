@@ -297,11 +297,22 @@ export function createWantedPosterTexture(): THREE.CanvasTexture {
   texture.needsUpdate = true;
 
   const base = import.meta.env.BASE_URL;
-  const profileUrl = import.meta.env.VITE_PROFILE_URL || (base + 'profile.json');
+  // Use VITE_PROFILE_URL if provided (e.g. injected at build time on GitHub Pages).
+  // Otherwise only attempt the local public/profile.json in dev — in production it is
+  // gitignored and not deployed, so skip the fetch to avoid a 404.
+  const profileUrl = import.meta.env.VITE_PROFILE_URL
+    || (import.meta.env.DEV ? base + 'profile.json' : '');
+
+  const profilePromise: Promise<ProfileData> = profileUrl
+    ? fetch(profileUrl)
+        .then(r => (r.ok ? r.json() : Promise.reject(r.status)))
+        .then(d => ({ ...DEFAULT_PROFILE, ...d }))
+        .catch(() => DEFAULT_PROFILE)
+    : Promise.resolve(DEFAULT_PROFILE);
 
   // Load profile.json + avatar in parallel, then redraw
   Promise.all([
-    fetch(profileUrl).then(r => r.json()).then(d => ({ ...DEFAULT_PROFILE, ...d })).catch(() => DEFAULT_PROFILE),
+    profilePromise,
     new Promise<HTMLImageElement | undefined>(resolve => {
       const img = new Image();
       img.onload = () => resolve(img);
@@ -309,7 +320,7 @@ export function createWantedPosterTexture(): THREE.CanvasTexture {
       img.src = base + 'images/avatar.jpg';
     }),
   ]).then(([profile, img]) => {
-    drawWantedPoster(canvas, img, profile as ProfileData);
+    drawWantedPoster(canvas, img, profile);
     texture.needsUpdate = true;
   });
 
